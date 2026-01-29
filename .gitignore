@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Database (Removed at user request for Render deployment)
+# walletracker.db
+walletracker.db-shm
+walletracker.db-wal
+
+# Logs
+*.log
+nohup.out
+
+# OS
+.DS_Store
+.idea/
+.vscode/
