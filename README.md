@@ -1,4 +1,4 @@
-# walleTracker - Solana Wallet Monitoring System
+# WalletTracker - Solana Wallet Monitoring System
 
 ## Overview
 
