@@ -189,19 +189,19 @@ class App:
         logger.info("🤖 Bot is active and monitoring...")
         await self.monitor.run(interval=120)
 
-def run_api():
-    import uvicorn
-    from app.api import app
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
+from app.api import app
+
+# Create global bot instance
+bot_instance = App()
+
+@app.on_event("startup")
+async def start_bot():
+    """Start the bot in the background when the API starts"""
+    logger.info("🎬 Starting bot background task...")
+    asyncio.create_task(bot_instance.run())
 
 if __name__ == "__main__":
-    # Start API in background thread
-    api_thread = threading.Thread(target=run_api, daemon=True)
-    api_thread.start()
-    
-    # Start Bot
-    app = App()
-    try:
-        asyncio.run(app.run())
-    except KeyboardInterrupt:
-        pass
+    import uvicorn
+    # If run directly via python main.py, start uvicorn
+    # The bot will be started by the @app.on_event("startup") handler
+    uvicorn.run(app, host="0.0.0.0", port=8000)
