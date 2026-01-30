@@ -263,7 +263,7 @@ function renderWallets() {
         <div class="wallet-item">
             <div class="wallet-rank">${start + i + 1}</div>
             <div class="wallet-info">
-                <div class="wallet-label">${w.label || 'Unnamed Wallet'}</div>
+                <div class="wallet-label">${w.label || truncateAddress(w.address)}</div>
                 <div class="wallet-address">
                     ${truncateAddress(w.address)}
                     <span class="copy-icon" onclick="copyToClipboard('${w.address}')">📋</span>
@@ -315,7 +315,7 @@ function renderNews() {
             </div>
             <div class="news-title">${item.title}</div>
             <div class="news-summary">${item.summary}</div>
-            ${item.source_url ? `<div class="news-source-link">🔗 View Source</div>` : ''}
+            ${item.source_url ? `<div class="news-source-link">🔗 View Full Alpha Source</div>` : ''}
         </div>
     `).join('');
 }

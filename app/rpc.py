@@ -20,7 +20,7 @@ class SolanaRPCManager:
         self.base_backoff = 2.0  # initial backoff seconds
         self.max_backoff = 30.0  # max backoff seconds
         self.current_backoff = self.base_backoff
-        self.min_request_interval = 0.5  # minimum seconds between requests
+        self.min_request_interval = 1.0  # Increased to be safer for free RPCs
         self.last_request_time = 0
 
     async def get_client(self):

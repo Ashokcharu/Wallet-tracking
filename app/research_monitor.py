@@ -57,10 +57,14 @@ class TrendMonitor:
                 await asyncio.sleep(60)
 
     async def _add_news(self, session, title, summary, category, importance=50, source_url=None):
-        """Helper with deduplication and source link"""
-        # Strict Title Deduplication
+        """Helper with strict deduplication and source link"""
+        # 1. Content-based Deduplication (Title or beginning of summary)
+        summary_prefix = summary[:50]
         exists = await session.execute(
-            select(NewsArticle).where(NewsArticle.title == title)
+            select(NewsArticle).where(
+                (NewsArticle.title == title) | 
+                (NewsArticle.summary.like(f"{summary_prefix}%"))
+            )
         )
         if exists.scalars().first():
             return

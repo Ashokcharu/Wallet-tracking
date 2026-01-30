@@ -48,7 +48,15 @@ TOP_WALLETS_COUNT = 10
 
 class App:
     def __init__(self):
-        rpc_urls = os.getenv("SOLANA_RPC_URLS", "https://api.mainnet-beta.solana.com").split(",")
+        default_rpcs = [
+            "https://api.mainnet-beta.solana.com",
+            "https://solana-api.projectserum.com",
+            "https://rpc.ankr.com/solana",
+            "https://solana-mainnet.g.allnodes.com",
+            "https://api.witness.co"
+        ]
+        user_rpcs = os.getenv("SOLANA_RPC_URLS")
+        rpc_urls = user_rpcs.split(",") if user_rpcs else default_rpcs
         self.rpc_manager = SolanaRPCManager(rpc_urls)
         
         helius_url = os.getenv("HELIUS_RPC_URL")

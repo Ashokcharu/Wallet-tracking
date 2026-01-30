@@ -191,48 +191,58 @@ async def get_wallets():
 @app.post("/api/wallets/upload")
 async def upload_wallets(data: WalletUpload):
     """Upload wallets from frontend with password and deduplication"""
-    async with async_session() as session:
-        # 1. Verify Password
-        config_result = await session.execute(
-            select(Config).where(Config.key == "upload_password_hash")
-        )
-        config = config_result.scalar_one_or_none()
-        
-        if not config:
-            # Fallback for first run if not initialized
-            expected_pw = "eDJwdE4Lf2ZT" # The generated password
-        else:
-            if not pwd_context.verify(data.password, config.value):
-                raise HTTPException(status_code=403, detail="Invalid password")
-
-        # 2. Process Wallets (Deduplication)
-        added = 0
-        skipped = 0
-        for wallet_data in data.wallets:
-            address = wallet_data.get("address", "").strip()
-            label = wallet_data.get("label")
-            
-            if not address or len(address) < 32:
-                continue
-            
-            # Strict Deduplication
-            result = await session.execute(
-                select(Wallet).where(Wallet.address == address)
+    try:
+        async with async_session() as session:
+            # 1. Verify Password
+            config_result = await session.execute(
+                select(Config).where(Config.key == "upload_password_hash")
             )
-            existing = result.scalar_one_or_none()
+            config = config_result.scalar_one_or_none()
             
-            if not existing:
-                wallet = Wallet(address=address, label=label, active=True)
-                session.add(wallet)
-                added += 1
+            if not config:
+                # Fallback for first run if not initialized
+                expected_pw = "eDJwdE4Lf2ZT" # The generated password
+                if data.password != expected_pw:
+                    raise HTTPException(status_code=403, detail="Invalid initial password")
             else:
-                existing.active = True
-                if label:
-                    existing.label = label
-                skipped += 1
-        
-        await session.commit()
-        return {"added": added, "skipped": skipped, "total": len(data.wallets)}
+                if not pwd_context.verify(data.password, config.value):
+                    raise HTTPException(status_code=403, detail="Invalid password")
+
+            # 2. Process Wallets (Deduplication)
+            added = 0
+            skipped = 0
+            for wallet_data in data.wallets:
+                address = wallet_data.get("address", "").strip()
+                label = wallet_data.get("label")
+                
+                if not address or len(address) < 32:
+                    continue
+                
+                # Strict Deduplication
+                result = await session.execute(
+                    select(Wallet).where(Wallet.address == address)
+                )
+                existing = result.scalar_one_or_none()
+                
+                if not existing:
+                    wallet = Wallet(address=address, label=label, active=True)
+                    session.add(wallet)
+                    added += 1
+                else:
+                    existing.active = True
+                    if label:
+                        existing.label = label
+                    skipped += 1
+            
+            await session.commit()
+            return {"added": added, "skipped": skipped, "total": len(data.wallets)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"❌ Upload Error: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/news", response_model=List[NewsResponse])
 async def get_news():
