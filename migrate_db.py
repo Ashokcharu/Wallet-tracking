@@ -1,38 +1,40 @@
-import sqlite3
+import asyncio
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from app.models import Base, Config
+from passlib.context import CryptContext
 import os
 
-def migrate():
-    db_path = "walletracker.db"
-    if not os.path.exists(db_path):
-        print(f"❌ Database not found at {db_path}")
-        return
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./walletracker.db")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    columns_to_add = [
-        ("narrative", "TEXT"),
-        ("twitter_url", "TEXT"),
-        ("website_url", "TEXT"),
-        ("narrative_status", "TEXT DEFAULT 'NEW'"),
-        ("last_updated_at", "DATETIME")
-    ]
-
-    print(f"📡 Migrating database {db_path}...")
+async def migrate():
+    print("🚀 Starting Database Migration...")
+    engine = create_async_engine(DATABASE_URL)
     
-    for col_name, col_type in columns_to_add:
-        try:
-            cursor.execute(f"ALTER TABLE tokens ADD COLUMN {col_name} {col_type}")
-            print(f"✅ Added column {col_name} to tokens table.")
-        except sqlite3.OperationalError as e:
-            if "duplicate column name" in str(e).lower():
-                print(f"ℹ️ Column {col_name} already exists.")
-            else:
-                print(f"❌ Error adding column {col_name}: {e}")
-
-    conn.commit()
-    conn.close()
-    print("✨ Migration complete.")
+    async with engine.begin() as conn:
+        print("🛠️ Creating all tables if they don't exist...")
+        await conn.run_sync(Base.metadata.create_all)
+    
+    async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+    
+    async with async_session() as session:
+        from sqlalchemy import select
+        # Initialize default password if not set
+        result = await session.execute(select(Config).where(Config.key == "upload_password_hash"))
+        if not result.scalar_one_or_none():
+            print("🔐 Initializing default upload password...")
+            default_pw = "eDJwdE4Lf2ZT"
+            hashed_pw = pwd_context.hash(default_pw)
+            config = Config(key="upload_password_hash", value=hashed_pw)
+            session.add(config)
+            await session.commit()
+            print("✅ Default password initialized.")
+        else:
+            print("ℹ️ Password already initialized.")
+            
+    print("✨ Migration complete!")
+    await engine.dispose()
 
 if __name__ == "__main__":
-    migrate()
+    asyncio.run(migrate())

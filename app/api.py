@@ -61,6 +61,8 @@ class SignalResponse(BaseModel):
     created_at: datetime
 
 class WalletResponse(BaseModel):
+    address: str
+    label: Optional[str]
     score: float
 
 class NewsResponse(BaseModel):

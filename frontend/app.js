@@ -263,9 +263,9 @@ function renderWallets() {
         <div class="wallet-item">
             <div class="wallet-rank">${start + i + 1}</div>
             <div class="wallet-info">
-                <div class="wallet-label">${w.label || truncateAddress(w.address)}</div>
+                <div class="wallet-label">${w.label ? w.label : `Wallet ${truncateAddress(w.address)}`}</div>
                 <div class="wallet-address">
-                    ${truncateAddress(w.address)}
+                    ${w.address} 
                     <span class="copy-icon" onclick="copyToClipboard('${w.address}')">📋</span>
                 </div>
             </div>
