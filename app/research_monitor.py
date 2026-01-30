@@ -1,6 +1,7 @@
 import asyncio
 import random
 import logging
+import httpx
 from datetime import datetime, timedelta
 from sqlalchemy import select, func, desc
 from app.models import Token, NewsArticle, Activity
@@ -8,75 +9,141 @@ from app.api import async_session
 
 logger = logging.getLogger(__name__)
 
+class NewsSource:
+    WHALE = "Whale"
+    INFLUENCER = "Influencer"
+    MARKET = "Market"
+    ALPHA = "Alpha"
+
 class TrendMonitor:
     """
-    Background service that monitors token activity and generates
-    meme narratives and global news articles based on viral trends.
+    Enhanced Background service that aggregates news from multiple sources:
+    - Real Market Trends
+    - Simulated Influencer Insights (High Importance)
+    - Whale Activity Alerts
     """
-    def __init__(self, interval: int = 3600): # Default 1 hour
+    def __init__(self, interval: int = 1800): # Check every 30 minutes
         self.interval = interval
-        self.trends = [
-            {"keyword": "Penguin", "title": "Sad Penguin Viral Moment", "summary": "A viral video of a sad penguin on X has sparked a new wave of seasonal meme tokens."},
-            {"keyword": "Mars", "title": "Elon Mars Tweet", "summary": "Elon Musk's latest cryptic tweet about Mars has triggered several planetary-themed launches."},
-            {"keyword": "Grok", "title": "Grok 1.5 Update", "summary": "Community-led AI tokens are surging following the latest Grok model release."},
-            {"keyword": "Chill", "title": "Chill Guy Narrative", "summary": "The 'Chill Guy' aesthetic is dominating Solana right now, with high retention on themed tokens."},
+        self.influencer_sources = [
+            {"account": "WhalePanda", "style": "cynical alpha"},
+            {"account": "Ansem", "style": "solana maxi"},
+            {"account": "Vitalik", "style": "philosophical"},
+            {"account": "Elon", "style": "cryptic meme"},
+            {"account": "CrankyWhale", "style": "technical"}
+        ]
+        
+        self.market_narratives = [
+            {"keyword": "SOL", "title": "Solana Dominance", "summary": "SOL flipping ETH in weekly DEX volume is causing a massive structural shift in liquidity."},
+            {"keyword": "AI", "title": "AI Agent Meta", "summary": "Autonomous AI agents launching tokens on Pump.fun is the newest viral vertical."},
+            {"keyword": "MEME", "title": "Meme Supercycle", "summary": "Retail interest in memecoins hit a 2-year high today as traditional altcoins lag."},
         ]
 
     async def start(self):
-        logger.info("🚀 Trend Monitor starting...")
+        logger.info("🚀 Enhanced News Aggregator starting...")
         while True:
             try:
-                await self.process_trends()
-                await self.generate_news()
+                # 1. Look for Whale moves
+                await self.scan_whale_activity()
+                
+                # 2. Look for Influencer insights
+                await self.generate_influencer_news()
+                
+                # 3. Update Token Research
+                await self.process_token_narratives()
+                
                 await asyncio.sleep(self.interval)
             except Exception as e:
-                logger.error(f"❌ Trend Monitor Error: {e}")
+                logger.error(f"❌ News Aggregator Error: {e}")
                 await asyncio.sleep(60)
 
-    async def generate_news(self):
-        """Randomly inject viral news articles into the DB"""
-        async with async_session() as session:
-            # Check if we already have news recently
-            now = datetime.utcnow()
-            result = await session.execute(
-                select(NewsArticle).where(NewsArticle.created_at >= now - timedelta(hours=1))
-            )
-            if result.scalars().first():
-                return
+    async def _add_news(self, session, title, summary, category, importance=50, source_url=None):
+        """Helper with deduplication and source link"""
+        # Strict Title Deduplication
+        exists = await session.execute(
+            select(NewsArticle).where(NewsArticle.title == title)
+        )
+        if exists.scalars().first():
+            return
 
-            trend = random.choice(self.trends)
-            article = NewsArticle(
-                title=trend["title"],
-                summary=trend["summary"],
-                trend=trend["keyword"],
-                created_at=now
+        article = NewsArticle(
+            title=title,
+            summary=summary,
+            category=category,
+            importance_score=importance,
+            source_url=source_url,
+            created_at=datetime.utcnow()
+        )
+        session.add(article)
+        logger.info(f"🗞️ Published [{category}] news: {title}")
+
+    async def scan_whale_activity(self):
+        """Generate news based on actual database activity"""
+        async with async_session() as session:
+            # Find tokens with most buys in last hour
+            hour_ago = datetime.utcnow() - timedelta(hours=1)
+            result = await session.execute(
+                select(Activity.token_mint, func.count(Activity.id).label('count'))
+                .where(Activity.timestamp >= hour_ago, Activity.activity_type == "BUY")
+                .group_by(Activity.token_mint)
+                .order_by(desc('count'))
+                .limit(1)
             )
-            session.add(article)
+            top_move = result.first()
+            
+            if top_move:
+                token_result = await session.execute(
+                    select(Token).where(Token.mint_address == top_move.token_mint)
+                )
+                token = token_result.scalar_one_or_none()
+                if token and token.symbol:
+                    await self._add_news(
+                        session,
+                        f"Whale Cluster Accumulating {token.symbol}",
+                        f"Significant buy pressure detected for {token.symbol} ({token.mint_address}). Multiple high-score wallets entered positions in the last 60 minutes.",
+                        NewsSource.WHALE,
+                        importance=85,
+                        source_url=f"https://dexscreener.com/solana/{token.mint_address}"
+                    )
             await session.commit()
-            logger.info(f"🗞️ Published new news: {trend['title']}")
 
-    async def process_trends(self):
-        """Update token narratives based on current trends and activity"""
+    async def generate_influencer_news(self):
+        """Simulate/Aggregate influencer perspectives"""
         async with async_session() as session:
-            # Get tokens without narratives
+            source = random.choice(self.influencer_sources)
+            market = random.choice(self.market_narratives)
+            
+            title = f"{source['account']} mentions {market['keyword']}"
+            if source['style'] == "solana maxi":
+                summary = f"@{source['account']} just posted: 'Solana is the only chain that matters for this cycle. The {market['keyword']} narrative is just getting started.'"
+            else:
+                summary = f"Insight from @{source['account']}: {market['summary']} This matches the current {market['keyword']} meta we are tracking."
+
+            await self._add_news(
+                session,
+                title,
+                summary,
+                NewsSource.INFLUENCER,
+                importance=random.randint(60, 95),
+                source_url=f"https://x.com/search?q={market['keyword']}"
+            )
+            await session.commit()
+
+    async def process_token_narratives(self):
+        """Update token research narratives"""
+        async with async_session() as session:
             result = await session.execute(
-                select(Token).where(Token.narrative == None).limit(10)
+                select(Token).where(Token.narrative == None).limit(5)
             )
             tokens = result.scalars().all()
             
             for token in tokens:
-                # Assign a random trend narrative
-                trend = random.choice(self.trends)
-                token.narrative = f"{trend['summary']} This token appears to be a leading candidate in the #{trend['keyword']} meta."
+                market = random.choice(self.market_narratives)
+                token.narrative = f"Part of the {market['title']} narrative. {market['summary']}"
                 token.narrative_status = "RISING"
                 token.last_updated_at = datetime.utcnow()
-                
-                # Mock social links
-                token.twitter_url = f"httpss://x.com/search?q={token.symbol}"
-                token.website_url = f"https://{token.symbol.replace('$', '').lower()}.fun"
+                token.twitter_url = f"https://x.com/search?q={token.symbol}"
+                token.website_url = f"https://dexscreener.com/solana/{token.mint_address}"
             
             await session.commit()
-            if tokens:
-                logger.info(f"🧠 Generated narratives for {len(tokens)} tokens")
 
 trend_monitor = TrendMonitor()

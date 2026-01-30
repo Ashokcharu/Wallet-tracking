@@ -5,10 +5,7 @@ __pycache__/
 venv/
 .env
 
-# Database (Removed at user request for Render deployment)
-# walletracker.db
-walletracker.db-shm
-walletracker.db-wal
+# Database files are now tracked at user request for sync
 
 # Logs
 *.log

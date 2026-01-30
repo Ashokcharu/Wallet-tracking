@@ -114,5 +114,15 @@ class NewsArticle(Base):
     title = Column(String, nullable=False)
     summary = Column(Text)
     trend = Column(String)  # e.g., "Penguin"
+    category = Column(String, default="Market") # Whale, Influencer, Alpha, Market
+    importance_score = Column(Integer, default=50) # 0-100
     created_at = Column(DateTime, default=datetime.utcnow)
     source_url = Column(String, nullable=True)
+
+class Config(Base):
+    """Stores encrypted/hashed settings and configuration"""
+    __tablename__ = "config"
+    
+    key = Column(String, primary_key=True)
+    value = Column(Text, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

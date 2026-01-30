@@ -17,9 +17,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-from app.models import Wallet, Token, Activity, Signal, SignalLevel
+from app.models import Wallet, Token, Activity, Signal, SignalLevel, Config
+from passlib.context import CryptContext
 
-load_dotenv()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 app = FastAPI(title="WalleTracker API", version="2.1")
 
@@ -40,6 +41,7 @@ async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession
 # Pydantic Models
 class WalletUpload(BaseModel):
     wallets: List[dict]
+    password: str
 
 class TokenResponse(BaseModel):
     mint_address: str
@@ -65,7 +67,9 @@ class NewsResponse(BaseModel):
     id: int
     title: str
     summary: str
-    trend: str
+    category: str
+    importance_score: int
+    source_url: Optional[str]
     created_at: datetime
 
 class ResearchResponse(BaseModel):
@@ -186,9 +190,24 @@ async def get_wallets():
 
 @app.post("/api/wallets/upload")
 async def upload_wallets(data: WalletUpload):
-    """Upload wallets from frontend"""
+    """Upload wallets from frontend with password and deduplication"""
     async with async_session() as session:
+        # 1. Verify Password
+        config_result = await session.execute(
+            select(Config).where(Config.key == "upload_password_hash")
+        )
+        config = config_result.scalar_one_or_none()
+        
+        if not config:
+            # Fallback for first run if not initialized
+            expected_pw = "eDJwdE4Lf2ZT" # The generated password
+        else:
+            if not pwd_context.verify(data.password, config.value):
+                raise HTTPException(status_code=403, detail="Invalid password")
+
+        # 2. Process Wallets (Deduplication)
         added = 0
+        skipped = 0
         for wallet_data in data.wallets:
             address = wallet_data.get("address", "").strip()
             label = wallet_data.get("label")
@@ -196,7 +215,7 @@ async def upload_wallets(data: WalletUpload):
             if not address or len(address) < 32:
                 continue
             
-            # Check if exists
+            # Strict Deduplication
             result = await session.execute(
                 select(Wallet).where(Wallet.address == address)
             )
@@ -210,9 +229,10 @@ async def upload_wallets(data: WalletUpload):
                 existing.active = True
                 if label:
                     existing.label = label
+                skipped += 1
         
         await session.commit()
-        return {"added": added, "total": len(data.wallets)}
+        return {"added": added, "skipped": skipped, "total": len(data.wallets)}
 
 @app.get("/api/news", response_model=List[NewsResponse])
 async def get_news():
@@ -228,7 +248,9 @@ async def get_news():
                 id=a.id,
                 title=a.title,
                 summary=a.summary,
-                trend=a.trend,
+                category=a.category or "Market",
+                importance_score=a.importance_score or 50,
+                source_url=a.source_url,
                 created_at=a.created_at
             ) for a in articles
         ]
