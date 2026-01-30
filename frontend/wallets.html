@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalleTracker | Wallets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🪙</span>
+                    <span class="logo-text">WalleTracker</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item">🏠 Dashboard</a>
+                <a href="tokens.html" class="nav-item">🚀 Tokens</a>
+                <a href="wallets.html" class="nav-item active">👑 Wallets</a>
+                <a href="news.html" class="nav-item">🗞️ News Feed</a>
+                <a href="upload.html" class="nav-item">📤 Upload</a>
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="header">
+                <div class="header-stats">
+                    <div class="stat-pill"><span class="stat-label">Wallets</span> <span class="stat-value"
+                            id="wallet-count">--</span></div>
+                    <div class="stat-pill live"><span class="pulse"></span> <span class="stat-label">Live</span></div>
+                </div>
+            </header>
+
+            <main class="container">
+                <section class="card card-wallets">
+                    <div class="card-header">
+                        <h2>👑 Smart Money Wallets</h2>
+                        <div class="pagination" id="wallet-pagination">
+                            <button class="btn btn-secondary btn-sm" id="prev-wallets">Prev</button>
+                            <span id="wallet-page-info">Page 1</span>
+                            <button class="btn btn-secondary btn-sm" id="next-wallets">Next</button>
+                        </div>
+                    </div>
+                    <div class="wallet-list" id="wallet-list"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <div class="toast-container" id="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>

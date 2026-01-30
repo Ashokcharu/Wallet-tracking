@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalleTracker | Deep Research</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .research-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .research-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .token-profile {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .token-icon-lg {
+            font-size: 3rem;
+            background: var(--accent-gradient);
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .token-titles h1 {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .token-titles .mint {
+            font-family: monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .narrative-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .narrative-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .narrative-body {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .external-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .external-btn:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-hover);
+        }
+
+        .disclaimer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+
+    <div class="research-container">
+        <div class="research-header">
+            <div class="token-profile">
+                <div class="token-icon-lg" id="token-icon">🪙</div>
+                <div class="token-titles">
+                    <h1 id="token-symbol">--</h1>
+                    <div class="mint">
+                        <span class="logo-icon">🪙</span>
+                        <span id="mint-address">--</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="window.close()">Close</button>
+        </div>
+
+        <section class="narrative-card">
+            <div class="narrative-title"><span>📖</span> Origin & Narrative</div>
+            <div class="narrative-body" id="token-narrative">
+                Loading deep research data...
+            </div>
+        </section>
+
+        <section class="narrative-card">
+            <div class="narrative-title"><span>🔗</span> Official Links</div>
+            <div class="links-grid" id="token-links">
+                <!-- Links will be injected here -->
+            </div>
+        </section>
+
+        <section class="narrative-card">
+            <div class="narrative-title"><span>📉</span> Market Analysis</div>
+            <div class="links-grid">
+                <a href="#" id="link-dex" class="external-btn" target="_blank">📈 DexScreener</a>
+                <a href="#" id="link-pump" class="external-btn" target="_blank">💊 Pump.fun</a>
+            </div>
+        </section>
+
+        <div class="disclaimer">
+            ⚠️ <strong>Legal Disclaimer:</strong> Information provided is for research purposes only. Meme tokens are
+            highly volatile and risky. This is not financial advice.
+        </div>
+    </div>
+
+    <script>
+        // Simple script to pull data from URL params or API
+        const params = new URLSearchParams(window.location.search);
+        const mint = params.get('mint');
+
+        async function loadResearch() {
+            if (!mint) return;
+            document.getElementById('mint-address').textContent = mint;
+
+            try {
+                const response = await fetch(`/api/tokens/${mint}/research`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('token-symbol').textContent = data.symbol;
+                    document.getElementById('token-narrative').textContent = data.narrative;
+                    // Inject links...
+                } else {
+                    // Fallback mock
+                    document.getElementById('token-symbol').textContent = "PENGUIN";
+                    document.getElementById('token-narrative').textContent = "Inspired by the viral 'Sad Penguin' event on X. This token captures the community's emotional sentiment towards market volatility.";
+                }
+
+                document.getElementById('link-dex').href = `https://dexscreener.com/solana/${mint}`;
+                document.getElementById('link-pump').href = `https://pump.fun/${mint}`;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        loadResearch();
+    </script>
+</body>
+
+</html>

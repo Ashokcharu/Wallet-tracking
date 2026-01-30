@@ -19,7 +19,8 @@ from app.classifier import TokenClassifier
 from app.signals import SignalEngine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select, update, desc
+from sqlalchemy import select, update, desc, func
+from app.research_monitor import trend_monitor
 
 load_dotenv()
 
@@ -196,9 +197,12 @@ bot_instance = App()
 
 @app.on_event("startup")
 async def start_bot():
-    """Start the bot in the background when the API starts"""
+    """Start the bot and research monitor in the background when the API starts"""
     logger.info("🎬 Starting bot background task...")
     asyncio.create_task(bot_instance.run())
+    
+    logger.info("🧠 Starting Research Monitor background task...")
+    asyncio.create_task(trend_monitor.start())
 
 if __name__ == "__main__":
     import uvicorn

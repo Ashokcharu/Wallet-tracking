@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalleTracker | Upload</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🪙</span>
+                    <span class="logo-text">WalleTracker</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item">🏠 Dashboard</a>
+                <a href="tokens.html" class="nav-item">🚀 Tokens</a>
+                <a href="wallets.html" class="nav-item">👑 Wallets</a>
+                <a href="news.html" class="nav-item">🗞️ News Feed</a>
+                <a href="upload.html" class="nav-item active">📤 Upload</a>
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="header">
+                <div class="header-stats">
+                    <div class="stat-pill live"><span class="pulse"></span> <span class="stat-label">Live</span></div>
+                </div>
+            </header>
+
+            <main class="container">
+                <section class="card card-upload">
+                    <div class="card-header">
+                        <h2>📤 Add Smart Money Wallets</h2>
+                    </div>
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-icon">📁</div>
+                        <p>Drag & drop <strong>wallets.txt</strong> or click to browse</p>
+                        <input type="file" id="file-input" accept=".txt" hidden>
+                    </div>
+
+                    <div class="upload-guide">
+                        <h4>📋 Wallet Format Guide</h4>
+                        <div class="format-example">
+                            <code>
+# Each line = one wallet address
+
+# Option 1: Just the address
+9ZPsRWGkJsKxN3yzV5tVmQe...
+
+# Option 2: Address + Label
+9ZPsRWGkJsKxN3yzV5tVmQe..., WhaleAlpha
+ASTyfSim4Bk3p6SbPQdTDq..., PumpTrader
+                            </code>
+                        </div>
+                        <div class="wallet-types">
+                            <div class="wallet-type supported"><span>✅</span> Phantom, Solflare, Backpack</div>
+                            <div class="wallet-type unsupported"><span>❌</span> Metamask, Trust</div>
+                        </div>
+                    </div>
+
+                    <textarea id="wallet-input" placeholder="Or paste wallet addresses here..."></textarea>
+                    <button class="btn btn-primary" id="submit-wallets">
+                        <span>Add Wallets</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </section>
+            </main>
+        </div>
+    </div>
+    <div class="toast-container" id="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>

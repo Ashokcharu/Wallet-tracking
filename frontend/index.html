@@ -1,146 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WalleTracker | Solana Wallet Intelligence</title>
-    <meta name="description" content="Track smart money on Solana. Discover high-potential meme tokens before they moon.">
+    <meta name="description"
+        content="Track smart money on Solana. Discover high-potential meme tokens before they moon.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <!-- Animated background -->
     <div class="bg-gradient"></div>
-    
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <span class="logo-icon">🔮</span>
-            <span class="logo-text">WalleTracker</span>
-        </div>
-        <div class="header-stats">
-            <div class="stat-pill">
-                <span class="stat-label">Wallets</span>
-                <span class="stat-value" id="wallet-count">--</span>
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🪙</span>
+                    <span class="logo-text">WalleTracker</span>
+                </div>
             </div>
-            <div class="stat-pill">
-                <span class="stat-label">Tokens</span>
-                <span class="stat-value" id="token-count">--</span>
-            </div>
-            <div class="stat-pill live">
-                <span class="pulse"></span>
-                <span class="stat-label">Live</span>
-            </div>
-        </div>
-    </header>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="tokens.html" class="nav-item">
+                    <span class="nav-icon">🚀</span>
+                    <span>Tokens</span>
+                </a>
+                <a href="wallets.html" class="nav-item">
+                    <span class="nav-icon">👑</span>
+                    <span>Wallets</span>
+                </a>
+                <a href="news.html" class="nav-item">
+                    <span class="nav-icon">🗞️</span>
+                    <span>News Feed</span>
+                </a>
+                <a href="upload.html" class="nav-item">
+                    <span class="nav-icon">📤</span>
+                    <span>Upload</span>
+                </a>
+            </nav>
+        </aside>
 
-    <!-- Main Content -->
-    <main class="container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <h1>Track <span class="gradient-text">Smart Money</span> on Solana</h1>
-            <p class="hero-subtitle">Discover high-potential meme tokens before they moon 🚀</p>
-        </section>
-
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <!-- High Potential Tokens -->
-            <section class="card card-tokens">
-                <div class="card-header">
-                    <h2>🚀 High Potential Tokens</h2>
-                    <div class="filter-pills">
-                        <button class="filter-pill active" data-filter="all">All</button>
-                        <button class="filter-pill" data-filter="moonshot">🚀 Moonshot</button>
-                        <button class="filter-pill" data-filter="rising">📈 Rising</button>
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-stats">
+                    <div class="stat-pill">
+                        <span class="stat-label">Wallets</span>
+                        <span class="stat-value" id="wallet-count">--</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-label">Tokens</span>
+                        <span class="stat-value" id="token-count">--</span>
+                    </div>
+                    <div class="stat-pill live">
+                        <span class="pulse"></span>
+                        <span class="stat-label">Live</span>
                     </div>
                 </div>
-                <div class="token-list" id="token-list">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                    </div>
-                </div>
-            </section>
+            </header>
 
-            <!-- Recent Signals -->
-            <section class="card card-signals">
-                <div class="card-header">
-                    <h2>⚡ Recent Signals</h2>
-                    <span class="badge badge-live">LIVE</span>
-                </div>
-                <div class="signal-list" id="signal-list">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                    </div>
-                </div>
-            </section>
+            <!-- Main Content -->
+            <main class="container">
+                <!-- Hero Section -->
+                <section class="hero">
+                    <h1>Meme <span class="gradient-text">Research</span> Platform</h1>
+                    <p class="hero-subtitle">Discover real-time trends and smart money moves 🚀</p>
+                </section>
 
-            <!-- Wallet Upload -->
-            <section class="card card-upload">
-                <div class="card-header">
-                    <h2>📤 Add Wallets</h2>
-                </div>
-                <div class="upload-zone" id="upload-zone">
-                    <div class="upload-icon">📁</div>
-                    <p>Drag & drop <strong>wallets.txt</strong> or click to browse</p>
-                    <input type="file" id="file-input" accept=".txt" hidden>
-                </div>
-                <div class="upload-guide">
-                    <h4>📋 Wallet Format Guide</h4>
-                    <div class="format-example">
-                        <code>
-<span class="comment"># Each line = one wallet address</span>
-
-<span class="comment"># Option 1: Just the address</span>
-9ZPsRWGkJsKxN3yzV5tVmQe...
-
-<span class="comment"># Option 2: Address + Label</span>
-9ZPsRWGkJsKxN3yzV5tVmQe..., WhaleAlpha
-ASTyfSim4Bk3p6SbPQdTDq..., PumpTrader
-                        </code>
-                    </div>
-                    <div class="wallet-types">
-                        <div class="wallet-type supported">
-                            <span>✅</span>
-                            <span>Phantom, Solflare, Backpack</span>
+                <!-- Dashboard Summary Grid -->
+                <!-- Top 5 Tokens & News -->
+                <div class="dashboard-grid">
+                    <section class="card card-tokens">
+                        <div class="card-header">
+                            <h2>🚀 Top Moonshots</h2>
+                            <a href="tokens.html" class="research-link">View All →</a>
                         </div>
-                        <div class="wallet-type unsupported">
-                            <span>❌</span>
-                            <span>Metamask, Trust (EVM only)</span>
+                        <div class="token-list" id="home-token-list">
+                            <!-- Limited list of 5 tokens -->
                         </div>
-                    </div>
-                </div>
-                <textarea id="wallet-input" placeholder="Or paste wallet addresses here..."></textarea>
-                <button class="btn btn-primary" id="submit-wallets">
-                    <span>Add Wallets</span>
-                    <span class="btn-icon">→</span>
-                </button>
-            </section>
+                    </section>
 
-            <!-- Top Wallets -->
-            <section class="card card-wallets">
-                <div class="card-header">
-                    <h2>👑 Top Wallets</h2>
-                    <span class="sort-label">by score</span>
+                    <section class="card card-signals">
+                        <div class="card-header">
+                            <h2>⚡ Latest Signals</h2>
+                            <span class="badge badge-live">LIVE</span>
+                        </div>
+                        <div class="signal-list" id="signal-list"></div>
+                    </section>
+
+                    <section class="card card-news">
+                        <div class="card-header">
+                            <h2>🗞️ Trending Narrative</h2>
+                            <a href="news.html" class="research-link">Archives →</a>
+                        </div>
+                        <div class="news-feed" id="news-feed"></div>
+                    </section>
                 </div>
-                <div class="wallet-list" id="wallet-list">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                    </div>
-                </div>
-            </section>
+            </main>
         </div>
-    </main>
+    </div>
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toast-container"></div>
 
     <script src="app.js"></script>
 </body>
+
 </html>

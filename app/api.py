@@ -10,7 +10,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime, timedelta
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -48,6 +48,8 @@ class TokenResponse(BaseModel):
     moonshot_score: int
     wallet_count: int
     hold_ratio: int
+    volume_pct: float
+    first_seen_at: datetime
 
 class SignalResponse(BaseModel):
     token_symbol: str
@@ -57,9 +59,23 @@ class SignalResponse(BaseModel):
     created_at: datetime
 
 class WalletResponse(BaseModel):
-    address: str
-    label: Optional[str]
     score: float
+
+class NewsResponse(BaseModel):
+    id: int
+    title: str
+    summary: str
+    trend: str
+    created_at: datetime
+
+class ResearchResponse(BaseModel):
+    mint_address: str
+    symbol: Optional[str]
+    narrative: str
+    twitter_url: Optional[str]
+    website_url: Optional[str]
+    status: str
+    last_updated: datetime
 
 # API Endpoints
 @app.get("/api/tokens", response_model=List[TokenResponse])
@@ -107,8 +123,16 @@ async def get_tokens():
                 category=category,
                 moonshot_score=moonshot_score,
                 wallet_count=wallet_count,
-                hold_ratio=hold_ratio
+                hold_ratio=hold_ratio,
+                volume_pct=0.0, # Placeholder for now
+                first_seen_at=token.first_seen_at or datetime.utcnow()
             ))
+        
+        # Calculate Volume Percentage
+        total_token_buys = sum(t.wallet_count for t in token_list)
+        for t in token_list:
+            if total_token_buys > 0:
+                t.volume_pct = round((t.wallet_count / total_token_buys) * 100, 1)
         
         # Sort by moonshot score
         token_list.sort(key=lambda x: x.moonshot_score, reverse=True)
@@ -189,6 +213,47 @@ async def upload_wallets(data: WalletUpload):
         
         await session.commit()
         return {"added": added, "total": len(data.wallets)}
+
+@app.get("/api/news", response_model=List[NewsResponse])
+async def get_news():
+    """Get trending meme news"""
+    from app.models import NewsArticle
+    async with async_session() as session:
+        result = await session.execute(
+            select(NewsArticle).order_by(desc(NewsArticle.created_at)).limit(10)
+        )
+        articles = result.scalars().all()
+        return [
+            NewsResponse(
+                id=a.id,
+                title=a.title,
+                summary=a.summary,
+                trend=a.trend,
+                created_at=a.created_at
+            ) for a in articles
+        ]
+
+@app.get("/api/tokens/{mint}/research", response_model=ResearchResponse)
+async def get_token_research(mint: str):
+    """Get deep research for a specific token"""
+    async with async_session() as session:
+        result = await session.execute(
+            select(Token).where(Token.mint_address == mint)
+        )
+        token = result.scalar_one_or_none()
+        
+        if not token:
+            raise HTTPException(status_code=404, detail="Token not found")
+            
+        return ResearchResponse(
+            mint_address=token.mint_address,
+            symbol=token.symbol,
+            narrative=token.narrative or "No narrative data available yet. Our background monitor is tracking this token.",
+            twitter_url=token.twitter_url,
+            website_url=token.website_url,
+            status=token.narrative_status or "NEW",
+            last_updated=token.last_updated_at or datetime.utcnow()
+        )
 
 @app.get("/api/stats")
 async def get_stats():

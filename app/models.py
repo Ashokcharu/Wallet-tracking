@@ -63,6 +63,13 @@ class Token(Base):
     hold_ratio = Column(Float, default=0.0)        # % of buyers still holding
     avg_hold_days = Column(Float, default=0.0)     # average hold time in days
     
+    # Research Fields
+    narrative = Column(Text, nullable=True)
+    twitter_url = Column(String, nullable=True)
+    website_url = Column(String, nullable=True)
+    narrative_status = Column(String, default="NEW") # NEW, RISING, VETERAN
+    last_updated_at = Column(DateTime, default=datetime.utcnow)
+    
     activities = relationship("Activity", back_populates="token")
 
 class Activity(Base):
@@ -98,3 +105,14 @@ class Signal(Base):
     reason = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     notified = Column(Boolean, default=False)
+
+class NewsArticle(Base):
+    """Tracks trending meme news and viral events"""
+    __tablename__ = "news_articles"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=False)
+    summary = Column(Text)
+    trend = Column(String)  # e.g., "Penguin"
+    created_at = Column(DateTime, default=datetime.utcnow)
+    source_url = Column(String, nullable=True)

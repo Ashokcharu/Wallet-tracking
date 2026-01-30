@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalleTracker | Tokens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🪙</span>
+                    <span class="logo-text">WalleTracker</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item">🏠 Dashboard</a>
+                <a href="tokens.html" class="nav-item active">🚀 Tokens</a>
+                <a href="wallets.html" class="nav-item">👑 Wallets</a>
+                <a href="news.html" class="nav-item">🗞️ News Feed</a>
+                <a href="upload.html" class="nav-item">📤 Upload</a>
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="header">
+                <div class="header-stats">
+                    <div class="stat-pill"><span class="stat-label">Tokens</span> <span class="stat-value"
+                            id="token-count">--</span></div>
+                    <div class="stat-pill live"><span class="pulse"></span> <span class="stat-label">Live</span></div>
+                </div>
+            </header>
+
+            <main class="container">
+                <section class="card card-tokens">
+                    <div class="card-header">
+                        <h2>🚀 High Potential Tokens</h2>
+                        <div class="header-actions">
+                            <select id="token-sort" class="sort-select">
+                                <option value="score">Sort by Score</option>
+                                <option value="age">Sort by Age</option>
+                                <option value="volume">Sort by Volume</option>
+                            </select>
+                            <div class="filter-pills">
+                                <button class="filter-pill active" data-filter="all">All</button>
+                                <button class="filter-pill" data-filter="moonshot">🚀 Moonshot</button>
+                                <button class="filter-pill" data-filter="rising">🔥 Rising</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="token-list" id="token-list"></div>
+                    <div class="pagination" id="token-pagination">
+                        <button class="btn btn-secondary btn-sm" id="prev-tokens">Prev</button>
+                        <span id="token-page-info">Page 1</span>
+                        <button class="btn btn-secondary btn-sm" id="next-tokens">Next</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <div class="toast-container" id="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>
